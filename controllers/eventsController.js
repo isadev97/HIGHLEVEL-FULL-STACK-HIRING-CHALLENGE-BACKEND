@@ -1,4 +1,3 @@
-// controllers/eventsController.js
 import db from "../config/firebase.js";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import moment from "moment-timezone";

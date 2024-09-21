@@ -2,10 +2,10 @@ import db from "../config/firebase.js";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import moment from "moment-timezone";
 
-const startHours = 10; // Example: 10 AM
-const endHours = 17; // Example: 5 PM
+const startHours = 8; // 8 AM
+const endHours = 17; // 5 PM
 const duration = 30; // Slot duration in minutes
-const defaultTimezone = "America/Los_Angeles"; // Default timezone
+const defaultTimezone = "US/Eastern"; // Updated timezone
 
 export const getFreeSlots = async (req, res) => {
   const { date, timezone = defaultTimezone } = req.query;
@@ -15,15 +15,18 @@ export const getFreeSlots = async (req, res) => {
     const eventsRef = collection(db, "events");
     const eventsQuery = query(
       eventsRef,
-      where("date", ">=", selectedDate.toISOString()),
-      where("date", "<", selectedDate.add(1, "day").toISOString())
+      where("startTime", ">=", selectedDate.toISOString()),
+      where("startTime", "<", selectedDate.add(1, "day").toISOString())
     );
     const eventsSnapshot = await getDocs(eventsQuery);
 
-    // Extract booked times
+    // Extract booked times with duration consideration
     const bookedTimes = eventsSnapshot.docs.map((doc) => {
       const { startTime, duration } = doc.data();
-      return moment(startTime).format();
+      return {
+        start: moment.tz(startTime, timezone),
+        end: moment.tz(startTime, timezone).add(duration, "minutes"),
+      };
     });
 
     // Calculate free slots
@@ -39,8 +42,12 @@ export const getFreeSlots = async (req, res) => {
       .minutes(0)
       .seconds(0);
 
-    while (startTime < endTime) {
-      if (!bookedTimes.includes(startTime.format())) {
+    while (startTime.isBefore(endTime)) {
+      const isBooked = bookedTimes.some(
+        (time) => startTime.isBetween(time.start, time.end, null, "[]") // includes start and end
+      );
+
+      if (!isBooked) {
         slots.push(startTime.format());
       }
       startTime.add(duration, "minutes");
