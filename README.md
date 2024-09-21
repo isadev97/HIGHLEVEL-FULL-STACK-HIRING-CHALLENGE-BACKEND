@@ -116,7 +116,8 @@ This project is licensed under the MIT License.
 
 ### Automated Tests
 
-A shell script is provided to run automated tests for the API. To execute the tests:
+A shell script is provided to run automated tests for the API. To execute the tests.
+Please clear Firestore database before running tests
 
 1. Navigate to the `tests` directory:
    cd tests
