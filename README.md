@@ -120,6 +120,6 @@ A shell script is provided to run automated tests for the API. To execute the te
 Please clear Firestore database before running tests
 
 1. Navigate to the `tests` directory:
-   cd tests
-   bash test.sh
+- cd tests
+- bash test.sh
 
