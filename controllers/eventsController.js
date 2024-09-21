@@ -1,31 +1,25 @@
 import db from "../config/firebase.js";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import moment from "moment-timezone";
-
-// Configuration constants
 const startHours = 8; // 8 AM
 const endHours = 17; // 5 PM
+const slotDuration = 30; // Duration in minutes
 const defaultTimezone = "US/Eastern"; // Updated timezone
-
-// Create an event
 export const createEvent = async (req, res) => {
   const { dateTime, duration: eventDuration } = req.body;
 
   try {
     const startTime = moment.tz(dateTime, defaultTimezone); // Parse the dateTime in the specified timezone
-
-    // Validate event time range
+    if (!startTime.isValid() || !eventDuration || eventDuration <= 0) {
+      return res.status(400).json({ message: "Invalid input" });
+    }
     if (!isTimeInRange(startTime, eventDuration)) {
       return res.status(422).json({ message: "Event time is out of range" });
     }
-
-    // Check if the slot is already booked
     const isSlotBooked = await checkIfSlotBooked(startTime, eventDuration);
     if (isSlotBooked) {
       return res.status(422).json({ message: "Slot already booked" });
     }
-
-    // Create new event
     await addDoc(collection(db, "events"), {
       startTime: startTime.toISOString(),
       duration: eventDuration,
@@ -36,14 +30,10 @@ export const createEvent = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// Validate if the time is within the allowed range
 const isTimeInRange = (time, duration) => {
   const endTime = time.clone().add(duration, "minutes");
   return time.hours() >= startHours && endTime.hours() <= endHours; // Changed to <= for end time
 };
-
-// Check if the slot is already booked
 const checkIfSlotBooked = async (startTime, eventDuration) => {
   const eventsRef = collection(db, "events");
   const eventsQuery = query(
@@ -59,8 +49,6 @@ const checkIfSlotBooked = async (startTime, eventDuration) => {
   const existingEvent = await getDocs(eventsQuery);
   return !existingEvent.empty;
 };
-
-// Get all events in the date range
 export const getEvents = async (req, res) => {
   const { startDate, endDate } = req.query;
 
@@ -72,8 +60,6 @@ export const getEvents = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// Fetch events within a specific date range
 const fetchEventsInRange = async (startDate, endDate) => {
   const eventsRef = collection(db, "events");
   const eventsQuery = query(
@@ -88,4 +74,14 @@ const fetchEventsInRange = async (startDate, endDate) => {
 
   const eventsSnapshot = await getDocs(eventsQuery);
   return eventsSnapshot.docs.map((doc) => doc.data());
+};
+export const getAvailableSlots = () => {
+  const slots = [];
+  for (let hour = startHours; hour < endHours; hour++) {
+    for (let minute = 0; minute < 60; minute += slotDuration) {
+      const slotTime = moment.tz({ hour, minute }, defaultTimezone);
+      slots.push(slotTime.format("HH:mm"));
+    }
+  }
+  return slots;
 };

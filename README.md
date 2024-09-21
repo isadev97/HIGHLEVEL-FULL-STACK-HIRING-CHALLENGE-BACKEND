@@ -111,3 +111,14 @@ This project is licensed under the MIT License.
 
 - Moment.js for date handling.
 - Firebase for database management.
+
+## Testing
+
+### Automated Tests
+
+A shell script is provided to run automated tests for the API. To execute the tests:
+
+1. Navigate to the `tests` directory:
+   cd tests
+   bash test.sh
+

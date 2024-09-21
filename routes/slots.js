@@ -1,4 +1,3 @@
-// routes/slots.js
 import express from "express";
 import { getFreeSlots } from "../controllers/slotsController.js";
 

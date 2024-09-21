@@ -54,10 +54,10 @@ const calculateFreeSlots = (bookedTimes, selectedDate, timezone) => {
     .seconds(0);
 
   while (startTime.isBefore(endTime)) {
+    const slotEndTime = startTime.clone().add(duration, "minutes");
     const isBooked = bookedTimes.some(
-      (time) => startTime.isBetween(time.start, time.end, null, "[]") // includes start and end
+      (time) => startTime.isBefore(time.end) && slotEndTime.isAfter(time.start) // Overlap condition
     );
-
     if (!isBooked) {
       slots.push(startTime.format("YYYY-MM-DDTHH:mm:ss"));
     }
