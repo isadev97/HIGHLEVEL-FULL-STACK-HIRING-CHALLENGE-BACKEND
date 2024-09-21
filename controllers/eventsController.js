@@ -1,15 +1,17 @@
 import db from "../config/firebase.js";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import moment from "moment-timezone";
-const startHours = 8; // 8 AM
-const endHours = 17; // 5 PM
-const slotDuration = 30; // Duration in minutes
-const defaultTimezone = "US/Eastern"; // Updated timezone
+
+const startHours = 8;
+const endHours = 17;
+const slotDuration = 30;
+const defaultTimezone = "US/Eastern";
+
 export const createEvent = async (req, res) => {
   const { dateTime, duration: eventDuration } = req.body;
 
   try {
-    const startTime = moment.tz(dateTime, defaultTimezone); // Parse the dateTime in the specified timezone
+    const startTime = moment.tz(dateTime, defaultTimezone);
     if (!startTime.isValid() || !eventDuration || eventDuration <= 0) {
       return res.status(400).json({ message: "Invalid input" });
     }
@@ -32,7 +34,7 @@ export const createEvent = async (req, res) => {
 };
 const isTimeInRange = (time, duration) => {
   const endTime = time.clone().add(duration, "minutes");
-  return time.hours() >= startHours && endTime.hours() <= endHours; // Changed to <= for end time
+  return time.hours() >= startHours && endTime.hours() <= endHours;
 };
 const checkIfSlotBooked = async (startTime, eventDuration) => {
   const eventsRef = collection(db, "events");

@@ -2,10 +2,10 @@ import db from "../config/firebase.js";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import moment from "moment-timezone";
 
-const startHours = 8; // 8 AM
-const endHours = 17; // 5 PM
-const duration = 30; // Slot duration in minutes
-const defaultTimezone = "US/Eastern"; // Default timezone
+const startHours = 8;
+const endHours = 17;
+const duration = 30;
+const defaultTimezone = "US/Eastern";
 
 export const getFreeSlots = async (req, res) => {
   const { date, timezone = defaultTimezone } = req.query;
@@ -56,7 +56,7 @@ const calculateFreeSlots = (bookedTimes, selectedDate, timezone) => {
   while (startTime.isBefore(endTime)) {
     const slotEndTime = startTime.clone().add(duration, "minutes");
     const isBooked = bookedTimes.some(
-      (time) => startTime.isBefore(time.end) && slotEndTime.isAfter(time.start) // Overlap condition
+      (time) => startTime.isBefore(time.end) && slotEndTime.isAfter(time.start)
     );
     if (!isBooked) {
       slots.push(startTime.format("YYYY-MM-DDTHH:mm:ss"));
